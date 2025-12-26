@@ -109,18 +109,13 @@ while running:
     if keys[pygame.K_DOWN] and player_y <= 540:
         player_y += vel
 
-    if keys[pygame.K_SPACE] and current_time - last_shot > shot_cooldown:
+    if keys[pygame.K_SPACE] and time_left > 0 and current_time - last_shot > shot_cooldown:
         bullet = Bullet(bullet_img, (player_x + 25, player_y + 30), -20)
         bullet_group.add(bullet)
         score += 10
         laser_sound.play()
+        last_shot = current_time
 
-
-    '''Parallax background moving'''
-    background_y_position = background_y_position + 1
-
-    if background_y_position >= background_image_height:
-        background_y_position = 0
 
     '''Parallax background moving'''
     background_y_position = background_y_position + 1
