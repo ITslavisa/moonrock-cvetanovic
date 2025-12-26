@@ -137,6 +137,10 @@ while running:
     '''Score'''
     score_text = font.render(f"Score = {score}", True, (255, 255, 255))
     screen.blit(score_text, (600, 10))
+    '''Game Over Text'''
+    if time_left <= 0:
+        game_over_text = font.render("GAME OVER", True, (255, 255, 255))
+        screen.blit(game_over_text, (300, 280))
     '''Player'''
     screen.blit(player_img, (player_x, player_y))
     '''Bullet'''
