@@ -1,3 +1,22 @@
+"""
+MoonRock (2D Arcade Prototype)
+
+What this file contains:
+- A simple 2D arcade-style prototype built with Pygame.
+- Player ship movement with arrow keys.
+- Shooting bullets with SPACE (with cooldown).
+- Countdown timer + score HUD.
+- Parallax scrolling background.
+- One enemy sprite (placeholder).
+- GAME OVER state when time runs out, with restart on key R.
+
+Controls:
+- Arrow keys: move the ship
+- SPACE: shoot (only while time_left > 0)
+- R: restart after GAME OVER
+- Close window: quit
+"""
+
 import pygame
 import sys
 from pathlib import Path
@@ -18,8 +37,8 @@ pygame.display.set_caption("MoonRock")
 player_x = 400
 player_y = 550
 vel = 15
-last_shot = 0
-shot_cooldown = 400
+last_shot = 0  # timestamp (ms) of the last fired shot
+shot_cooldown = 400  # minimum time (ms) between two shots
 
 bullet_group = pygame.sprite.Group()
 
@@ -31,11 +50,14 @@ clock = pygame.time.Clock()
 background_image = pygame.image.load(str(ASSETS_DIR/'background_Blue_Nebula_08.png')).convert()
 background_y_position = 0
 background_image_height = background_image.get_height()
+
 player_img = pygame.image.load(str(ASSETS_DIR/'Player.png')).convert_alpha()
 player_img = pygame.transform.scale(player_img, (50, 50))
+
 bullet_img = pygame.image.load(str(ASSETS_DIR/'Laser Bullet.png')).convert_alpha()
 bullet_img = pygame.transform.scale(bullet_img, (8, 16))
 bullet_img = pygame.transform.rotate(bullet_img, 180)
+
 alien_img = pygame.image.load(str(ASSETS_DIR/'alien.png')).convert_alpha()
 alien_img = pygame.transform.scale(alien_img, (50, 50))
 
@@ -46,6 +68,7 @@ game_over_sound = pygame.mixer.Sound(str(ASSETS_DIR / 'game_over.wav'))
 game_over_sound.set_volume(0.6)
 
 game_over_played = False
+game_over = False
 
 running = True
 
@@ -93,21 +116,39 @@ while running:
             running = False
         if event.type == timer_event and time_left > 0:
             time_left -= 1 # faster or slower Countdown
+
+        # When time runs out, switch the game into "game_over" state.
+        # This will be used to disable movement/shooting and allow restarting with R.
         if time_left <= 0 and not game_over_played:
                 game_over_sound.play()
                 game_over_played = True
+                game_over = True # play is over
+
+        # Restart the game only after GAME OVER:
+        # If the player presses R, reset main variables and clear bullets.
+        if event.type == pygame.KEYDOWN and game_over:
+            if event.key == pygame.K_r:
+                time_left = 350
+                score = 0
+                bullet_group.empty()   #remove all bullets from the screen
+                player_x, player_y = 400, 550   # reset player position
+                last_shot = 0   # reset shooting cooldown timer
+                game_over_played = False   # allow game-over sound to play next time
+                game_over = False   # Leave game_over state and continue playing
 
     keys = pygame.key.get_pressed()
     current_time = pygame.time.get_ticks()
-    
-    if keys[pygame.K_LEFT] and player_x >= 0:
-        player_x -= vel
-    if keys[pygame.K_RIGHT] and player_x <= 750:
-        player_x += vel
-    if keys[pygame.K_UP] and player_y >= 0:
-        player_y -= vel
-    if keys[pygame.K_DOWN] and player_y <= 540:
-        player_y += vel
+
+    # Disable player movement when the game is over
+    if not game_over:
+        if keys[pygame.K_LEFT] and player_x >= 0:
+            player_x -= vel
+        if keys[pygame.K_RIGHT] and player_x <= 750:
+            player_x += vel
+        if keys[pygame.K_UP] and player_y >= 0:
+            player_y -= vel
+        if keys[pygame.K_DOWN] and player_y <= 540:
+            player_y += vel
 
     if keys[pygame.K_SPACE] and time_left > 0 and current_time - last_shot > shot_cooldown:
         bullet = Bullet(bullet_img, (player_x + 25, player_y + 30), -20)
