@@ -25,7 +25,7 @@ ASSETS_DIR = BASE_DIR / 'Assets'                   # .../moonrock/Assets
 
 pygame.init()
 pygame.font.init()
-font=pygame.font.Font(None, 48)
+font = pygame.font.Font(None, 48)
 score = 0
 time_left= 350
 
@@ -76,7 +76,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, image, start_pos, speed_y):
         super().__init__()
         self.image = image
-        self.rect = self.image.get_rect(center = start_pos)
+        self.rect = self.image.get_rect(center=start_pos)
         self.mask = pygame.mask.from_surface(self.image)
         self.speed_y = speed_y
 
@@ -85,14 +85,14 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.y < 0:
             self.kill()
 
-timer_event = pygame.USEREVENT +1 # 1s timer
+timer_event = pygame.USEREVENT +1 # 50ms timer
 pygame.time.set_timer(timer_event, 50)
 
 class Alien(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = alien_img
-        self.rect = self.image.get_rect(center = (x, y))
+        self.rect = self.image.get_rect(center=(x, y))
         self.speed = 2
         self.direction = 4
 
@@ -115,14 +115,14 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == timer_event and time_left > 0:
-            time_left -= 1 # faster or slower Countdown
+            time_left -= 1  # faster or slower Countdown
 
         # When time runs out, switch the game into "game_over" state.
         # This will be used to disable movement/shooting and allow restarting with R.
         if time_left <= 0 and not game_over_played:
                 game_over_sound.play()
                 game_over_played = True
-                game_over = True # play is over
+                game_over = True  # play is over
 
         # Restart the game only after GAME OVER:
         # If the player presses R, reset main variables and clear bullets.
@@ -153,10 +153,8 @@ while running:
     if keys[pygame.K_SPACE] and time_left > 0 and current_time - last_shot > shot_cooldown:
         bullet = Bullet(bullet_img, (player_x + 25, player_y + 30), -20)
         bullet_group.add(bullet)
-        score += 10
         laser_sound.play()
         last_shot = current_time
-
 
     '''Parallax background moving'''
     background_y_position = background_y_position + 1
@@ -170,8 +168,15 @@ while running:
     '''Background'''
     #screen.blit(background_image, (0, 0))
     '''Enemies'''
-    enemies.draw(screen)
     enemies.update()
+    '''Bullet'''
+    bullet_group.update()
+    '''Hit detection: bullet hits enemy - remove both, add points'''
+    hits = pygame.sprite.groupcollide(enemies, bullet_group, True, True)
+    if hits:
+        score += 100
+    '''DRAW SECTION'''
+    enemies.draw(screen)
     '''Clock/Timer'''
     time_text = font.render(f"Time = {time_left}", True, (255, 255, 255))
     screen.blit(time_text, (10, 10))
@@ -184,8 +189,7 @@ while running:
         screen.blit(game_over_text, (300, 280))
     '''Player'''
     screen.blit(player_img, (player_x, player_y))
-    '''Bullet'''
-    bullet_group.update()
+    '''Bullet draw'''
     bullet_group.draw(screen)
     '''Display'''
     pygame.display.update()
