@@ -16,7 +16,6 @@ Controls:
 - R: restart after GAME OVER
 - Close window: quit
 """
-
 import pygame
 import sys
 from pathlib import Path
@@ -61,6 +60,10 @@ bullet_img = pygame.transform.rotate(bullet_img, 180)
 alien_img = pygame.image.load(str(ASSETS_DIR/'alien.png')).convert_alpha()
 alien_img = pygame.transform.scale(alien_img, (50, 50))
 
+explosion_img = pygame.image.load(str(ASSETS_DIR/'explosion.png')).convert_alpha()
+explosion_img = pygame.transform.scale(explosion_img, (60, 60))
+
+explosions = pygame.sprite.Group()
 ''' Sound '''
 laser_sound = pygame.mixer.Sound(str(ASSETS_DIR/'laser_shot.wav'))
 laser_sound.set_volume(0.4)
@@ -84,6 +87,19 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y += self.speed_y
         if self.rect.y < 0:
             self.kill()
+class Explosion(pygame.sprite.Sprite):
+    '''Simple explosion effect: shows one image for a short time, than disappears.'''
+    def __init__(self, pos):
+        super().__init__()
+        self.image = explosion_img
+        self.rect = self.image.get_rect(center=pos)
+        self.spawn_time = pygame.time.get_ticks()
+        self.duration_ms = 300   # explosion visible time
+
+    def update(self):
+        if pygame.time.get_ticks() - self.spawn_time > self.duration_ms:
+            self.kill()
+
 
 timer_event = pygame.USEREVENT +1 # 50ms timer
 pygame.time.set_timer(timer_event, 50)
@@ -150,7 +166,8 @@ while running:
         if keys[pygame.K_DOWN] and player_y <= 540:
             player_y += vel
 
-    if keys[pygame.K_SPACE] and time_left > 0 and current_time - last_shot > shot_cooldown:
+    if (keys[pygame.K_SPACE] and not game_over and time_left > 0 \
+            and current_time - last_shot > shot_cooldown):
         bullet = Bullet(bullet_img, (player_x + 25, player_y + 30), -20)
         bullet_group.add(bullet)
         laser_sound.play()
@@ -171,12 +188,17 @@ while running:
     enemies.update()
     '''Bullet'''
     bullet_group.update()
+    '''Explosion'''
+    explosions.update()
     '''Hit detection: bullet hits enemy - remove both, add points'''
     hits = pygame.sprite.groupcollide(enemies, bullet_group, True, True)
-    if hits:
+    for enemy in hits:
+        explosions.add(Explosion(enemy.rect.center))
         score += 100
     '''DRAW SECTION'''
     enemies.draw(screen)
+    '''Explosion Draw'''
+    explosions.draw(screen)
     '''Clock/Timer'''
     time_text = font.render(f"Time = {time_left}", True, (255, 255, 255))
     screen.blit(time_text, (10, 10))
