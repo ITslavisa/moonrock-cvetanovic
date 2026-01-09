@@ -96,6 +96,11 @@ class Explosion(pygame.sprite.Sprite):
         self.spawn_time = pygame.time.get_ticks()
         self.duration_ms = 300   # explosion visible time
 
+        # Scale-up unimation parameters (Task 1)
+        self.size = 20   # start size (px)
+        self.max_size = 70   # end size (px)
+        self.grow_step = 10   # how much to grow per step
+
     def update(self):
         if pygame.time.get_ticks() - self.spawn_time > self.duration_ms:
             self.kill()
