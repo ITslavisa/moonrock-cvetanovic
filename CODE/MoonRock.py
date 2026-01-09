@@ -96,10 +96,24 @@ class Explosion(pygame.sprite.Sprite):
         self.spawn_time = pygame.time.get_ticks()
         self.duration_ms = 300   # explosion visible time
 
-    def update(self):
-        if pygame.time.get_ticks() - self.spawn_time > self.duration_ms:
-            self.kill()
+        # Scale-up animation parameters
+        self.size = 20   # start size (px)
+        self.max_size = 70   # end size (px)
+        self.grow_step = 10   # how much to grow per step
 
+    def update(self):
+        # Scale up every update step (simple animation)
+        self.size += self.grow_step
+
+        # When explosion reaches max size, remove it
+        if self.size >= self.max_size:
+            self.kill()
+            return
+
+        # When the explosion centered while scaling
+        center = self.rect.center
+        self.image = pygame.transform.smoothscale(explosion_img, (self.size, self.size))
+        self.rect = self.image.get_rect(center=center)
 
 timer_event = pygame.USEREVENT +1 # 50ms timer
 pygame.time.set_timer(timer_event, 50)
