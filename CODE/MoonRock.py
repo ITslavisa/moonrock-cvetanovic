@@ -19,6 +19,8 @@ Controls:
 import pygame
 import sys
 from pathlib import Path
+import random  # used for random enemy spawn positions
+
 BASE_DIR = Path(__file__).resolve().parent.parent  # .../moonrock
 ASSETS_DIR = BASE_DIR / 'Assets'                   # .../moonrock/Assets
 
@@ -118,6 +120,13 @@ class Explosion(pygame.sprite.Sprite):
 timer_event = pygame.USEREVENT +1 # 50ms timer
 pygame.time.set_timer(timer_event, 50)
 
+# Enemy spawn timer:
+# - A custom event that triggers periodically to spawn a new enemy
+enemy_spawn_event = pygame.USEREVENT + 2
+pygame.time.set_timer(enemy_spawn_event, 900)  # spawn every ~0.9 seconds
+
+MAX_ENEMIES = 6  # maximum enemies allowed on screen at the same time
+
 class Alien(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -135,6 +144,10 @@ class Alien(pygame.sprite.Sprite):
             self.direction = 3
             self.rect.y += 20
 
+        # Remove enemies once they move below the screen
+        if self.rect.top > 600:
+            self.kill()
+
 '''Enemies Variables'''
 enemy = Alien(100, 100)
 enemies = pygame.sprite.Group(enemy)
@@ -146,6 +159,13 @@ while running:
             running = False
         if event.type == timer_event and time_left > 0:
             time_left -= 1  # faster or slower Countdown
+
+        # Spawn a new enemy periodically (only during gameplay)
+        if event.type == enemy_spawn_event and not game_over:
+            if len(enemies) < MAX_ENEMIES:
+                x = random.randint(25, 775)  # keep enemy inside screen borders
+                y = 100  # start above the screen
+                enemies.add(Alien(x, y))
 
         # When time runs out, switch the game into "game_over" state.
         # This will be used to disable movement/shooting and allow restarting with R.
