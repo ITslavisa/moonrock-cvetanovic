@@ -156,6 +156,13 @@ while running:
         if event.type == timer_event and time_left > 0:
             time_left -= 1  # faster or slower Countdown
 
+        # Spawn a new enemy periodically (only during gameplay)
+        if event.type == enemy_spawn_event and not game_over:
+            if len(enemies) < MAX_ENEMIES:
+                x = random.randint(25, 775)  # keep enemy inside screen borders
+                y = 100  # start above the screen
+                enemies.add(Alien(x, y))
+
         # When time runs out, switch the game into "game_over" state.
         # This will be used to disable movement/shooting and allow restarting with R.
         if time_left <= 0 and not game_over_played:
