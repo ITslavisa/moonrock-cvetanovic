@@ -144,6 +144,10 @@ class Alien(pygame.sprite.Sprite):
             self.direction = 3
             self.rect.y += 20
 
+        # Remove enemies once they move below the screen
+        if self.rect.top > 600:
+            self.kill()
+
 '''Enemies Variables'''
 enemy = Alien(100, 100)
 enemies = pygame.sprite.Group(enemy)
