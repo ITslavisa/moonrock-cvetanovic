@@ -19,6 +19,8 @@ Controls:
 import pygame
 import sys
 from pathlib import Path
+import random  # used for random enemy spawn positions
+
 BASE_DIR = Path(__file__).resolve().parent.parent  # .../moonrock
 ASSETS_DIR = BASE_DIR / 'Assets'                   # .../moonrock/Assets
 
@@ -117,6 +119,13 @@ class Explosion(pygame.sprite.Sprite):
 
 timer_event = pygame.USEREVENT +1 # 50ms timer
 pygame.time.set_timer(timer_event, 50)
+
+# Enemy spawn timer:
+# - A custom event that triggers periodically to spawn a new enemy
+enemy_spawn_event = pygame.USEREVENT + 2
+pygame.time.set_timer(enemy_spawn_event, 900)  # spawn every ~0.9 seconds
+
+MAX_ENEMIES = 6  # maximum enemies allowed on screen at the same time
 
 class Alien(pygame.sprite.Sprite):
     def __init__(self, x, y):
