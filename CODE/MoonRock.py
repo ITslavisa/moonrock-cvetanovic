@@ -21,8 +21,17 @@ import sys
 from pathlib import Path
 import random  # used for random enemy spawn positions
 
-BASE_DIR = Path(__file__).resolve().parent.parent  # .../moonrock
-ASSETS_DIR = BASE_DIR / 'Assets'                   # .../moonrock/Assets
+def resource_path(relative_path: str) -> Path:
+    '''
+    Docstring for resource_path
+    Get absolute path to resource, works for dev and for PyInstaller EXE.
+    '''
+    if hasattr(sys, "_MEIPASS"):
+        # PyInstaller extracts files to a temporary folder stored in sys._MEIPASS
+        return Path(sys._MEIPASS) / relative_path
+    return Path(__file__).resolve().parent.parent / relative_path
+
+ASSETS_DIR = resource_path("Assets")   # points to ./Assets in dev, or bundled Assets in EXE
 
 pygame.init()
 pygame.font.init()
